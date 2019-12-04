@@ -717,3 +717,354 @@ CREATE OR REPLACE PACKAGE PC_PROVEEDOR IS
 END PC_PROVEEDOR;
 /
 
+
+--CRUDI
+
+                                                                /*PC_PERSONA*/
+                                                                
+CREATE OR REPLACE PACKAGE BODY PC_PERSONA IS
+	PROCEDURE AD_EMPLEADOS(xNumDoc IN number(15),xnombre IN varchar(50),XCelular IN number,XDireccion IN varchar(50),XCorreo IN varchar(50),Xfechanacimiento IN Date,Xedad IN number(2),XIDEmpleado IN number,XCargo IN varchar(1)) IS
+	BEGIN
+		INSERT INTO persona (NumDoc ,nombre , celular, direccion,correo, fechanacimiento, edad, idempleado, cargo) VALUES (xNumDoc ,xnombre , xcelular, xdireccion, xcorreo, xfechanacimiento, xedad, xidempleado, xcargo);
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en persona');
+	END;
+    PROCEDURE MOD_EMPLEADOS(xNumDoc IN number(15),xnombre IN varchar(50),XCelular IN number,XDireccion IN varchar(50),XCorreo IN varchar(50),Xfechanacimiento IN Date,Xedad IN number(2),XIDEmpleado IN number,XCargo IN varchar(1))) IS
+	BEGIN
+		UPDATE persona SET celular=xcelular, direccion=xdireccion,correo=xcorreo,edad=xedad,cargo=xcargo WHERE NumDoc = XNumDoc;
+		COMMIT;
+		EXCEPTION 
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20002,'Error al modificar en persona');
+	END;
+    PROCEDURE EL_EMPLEADOS(XNumDoc IN number(15)) IS
+	BEGIN 
+		DELETE FROM persona  WHERE(NumDoc=XNumDoc);
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20003,'Error al eliminar en persona');
+	END;
+    FUNCTION CO_EMPLEADOS(XNumDoc IN number(15)) RETURN SYS_REFCURSOR IS PERSONAS SYS_REFCURSOR;
+	BEGIN 
+		OPEN PERSONA FOR
+			SELECT 
+                *
+            FROM persona e
+            WHERE Xempleado = e.empleado;
+		RETURN PERSONA;
+	END;
+    PROCEDURE AD_CLIENTES(xNumDoc IN number(15),xnombre IN varchar(50),XCelular IN number,XDireccion IN varchar(50),XCorreo IN varchar(50),Xfechanacimiento IN Date,Xedad IN number(2),,XIDCliente : number,XBonoDescuento:number,XBonoBaño:number) ) IS
+	BEGIN
+		INSERT INTO clientes (NumDoc ,nombre , celular, direccion,correo, fechanacimiento, edad,XIDCliente ,XBonoDescuento,XBonoBaño ) VALUES (xNumDoc ,xnombre , xcelular, xdireccion, xcorreo, xfechanacimiento, xedad, XIDCliente,XBonoDescuento,XBonoBaño );
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en persona');
+	END;
+    PROCEDURE MOD_CLIENTES(xNumDoc IN number(15),xnombre IN varchar(50),XCelular IN number,XDireccion IN varchar(50),XCorreo IN varchar(50),Xfechanacimiento IN Date,Xedad IN number(2),XIDCliente IN number,XBonoDescuento IN number,XBonoBaño IN number) IS
+	BEGIN
+		UPDATE cliente SET celular=xcelular, direccion=xdireccion,correo=xcorreo,edad=xedad,cargo=xcargo WHERE NumDoc = XNumDoc;
+		COMMIT;
+		EXCEPTION 
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20002,'Error al modificar en persona');
+	END;
+    PROCEDURE EL_CLIENTES(XNumDoc IN number(15)) IS
+	BEGIN 
+		DELETE FROM clientes  WHERE(NumDoc=XNumDoc);
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20003,'Error al eliminar en persona');
+	END;
+    FUNCTION CO_CLIENTE (XNumDoc IN number(15)) RETURN SYS_REFCURSOR IS PERSONAS SYS_REFCURSOR;
+	BEGIN 
+		OPEN CLIENTE FOR
+			SELECT 
+                *
+            FROM cliente c
+            WHERE Xcliente = c.cliente;
+		RETURN CLIENTE;
+	END;
+END PC_PERSONA;            
+/
+
+                                                                    /*PC_FACTURA*/
+CREATE OR REPLACE PACKAGE BODY PC_FACTURA IS
+	PROCEDURE AD_FACTURA (idFactura IN number,idCliente IN number,CostoDerivado IN number,BonoDescuento IN number,BonoBaño IN number,fecha IN Date ) VALUES (XidFactura IN number,XidCliente IN number,XCostoDerivado IN number,XBonoDescuento IN number,XBonoBaño IN number,xfecha IN Date) IS
+	BEGIN
+		INSERT INTO factura (IdFactura ,idCliente ,CostoDerivado ,BonoDescuento ,BonoBaño ,fecha)
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en factura');
+	END;
+    PROCEDURE MOD_FACTURA(XidFactura IN number,XidCliente IN number,XCostoDerivado IN number,XBonoDescuento IN number,XBonoBaño IN number,xfecha IN Date) IS
+	BEGIN
+		UPDATE factura SET CostoDerivado=XCostoDerivada, BonoDescuento=XBonoDescuento, BonoBano=XBonoBano  WHERE idfactura = Xidfactura;
+		COMMIT;
+		EXCEPTION 
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20002,'Error al modificar en factura');
+	END;
+    
+    FUNCTION CO_FACTURA(XidFactura IN number) RETURN SYS_REFCURSOR IS FACTURA SYS_REFCURSOR;
+	BEGIN 
+		OPEN FACTURA FOR
+			SELECT 
+                *
+            FROM factura f
+            WHERE XidFactura =f.idFactura;
+		RETURN FACTURA;
+	END;
+END PC_FACTURA;            
+/
+                                                                    /*PC_SERVICIO*/
+CREATE OR REPLACE PACKAGE BODY PC_SERVICIO IS
+	PROCEDURE AD_GUARDERIA( XIdGuarderia IN number,XFechaIngreso IN DATE,XFechaSalida IN DATE ,XTiempoPaseo IN number) IS
+	BEGIN
+		INSERT INTO GUARDERIA (IdGuarderia ,FechaIngreso ,FechaSalida ,TiempoPaseo) VALUES (XIdGuarderia ,XFechaIngreso ,XFechaSalida  ,XTiempoPaseo);
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en guarderia');
+	END;
+    PROCEDURE MOD_GUARDERIA(XiGuarderia IN number,XFechaIngreso IN DATE,XFechaSalida IN DATE ,XTiempoPaseo IN number) IS
+	BEGIN
+		UPDATE GUARDERIA SET FechaIngreso = XfechaIngreso, FechaSalida=XFechaSalida, TiempoPaseo=XTiempoPaseo WHERE idguarderia = Xidguarderia;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al modificar en guarderia');
+	END;
+    FUNCTION CO_GUARDERIA(XidFactura IN number) RETURN SYS_REFCURSOR IS FACTURA SYS_REFCURSOR;
+	BEGIN 
+		OPEN GUARDERIA FOR
+			SELECT 
+                *
+            FROM GUARDERIA g
+            WHERE Xidfactura = idfactura;
+		RETURN FACTURA;
+	END;
+    PROCEDURE (XidPago IN number) IS
+	BEGIN
+		DELETE FROM pagos WHERE idPago = XidPago;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al eliminar en guarderia');
+	END;
+    FUNCTION CO_PAGO(XidPago IN number) RETURN SYS_REFCURSOR IS PAGO SYS_REFCURSOR;
+	BEGIN 
+		OPEN PAGO FOR
+			SELECT 
+                *
+            FROM pagos p
+            WHERE XidPago = idPago;
+		RETURN PAGO;
+	END;
+    PROCEDURE AD_PEDIDO(Xfecha IN date, Xcliente IN number , Xpago IN number) IS
+	BEGIN
+		INSERT INTO pedidos (fecha ,cliente, pago ) values ( Xfecha , Xcliente , Xpago);
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en pedidos');
+	END;
+    PROCEDURE EL_PEDIDO(XidPedido IN number) IS
+	BEGIN
+		DELETE FROM pedidos WHERE idPedido = XidPedido;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al eliminar en pedidos');
+	END;
+    FUNCTION CO_PEDIDO(XidPedido IN number) RETURN SYS_REFCURSOR IS PEDIDO SYS_REFCURSOR;
+	BEGIN 
+		OPEN PEDIDO FOR
+			SELECT 
+                *
+            FROM pedidos pe
+            WHERE XidPedido = idPedido;
+		RETURN PEDIDO;
+	END;
+    PROCEDURE AD_REQUERIMIENTO(Xproducto IN varchar2, Xpedido IN number, Xcantidad IN number, Xprecio IN number) IS
+	BEGIN
+		INSERT INTO requerimientos(producto,pedido,cantidad,precio) VALUES (  Xproducto , Xpedido , Xcantidad , Xprecio );
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en requerimientos');
+	END;
+    PROCEDURE MO_REQUERIMIENTO(Xproducto IN varchar2, Xpedido IN number, Xcantidad IN number, Xprecio IN number) IS
+	BEGIN
+		UPDATE requerimientos SET cantidad = Xcantidad,precio=Xprecio WHERE producto = Xproducto AND pedido = Xpedido;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al modificar en requerimientos');
+	END;
+    PROCEDURE EL_REQUERIMIENTO(Xproducto IN varchar2, Xpedido IN number) IS
+	BEGIN
+		DELETE FROM requerimientos WHERE producto = Xproducto AND pedido = Xpedido;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al eliminar en requerimientos');
+	END;
+    FUNCTION CO_DETALLES_PAGOS RETURN SYS_REFCURSOR IS DETALLE SYS_REFCURSOR;
+	BEGIN 
+		OPEN DETALLE FOR
+			SELECT 
+                *
+            FROM Detalles_pagos;
+		RETURN DETALLE;
+	END;
+    FUNCTION CO_REQUERIMIENTO(Xproducto IN varchar2, Xpedido IN number) RETURN SYS_REFCURSOR IS DETALLE SYS_REFCURSOR;
+	BEGIN 
+		OPEN DETALLE FOR
+			SELECT 
+                *
+            FROM requerimientos r
+            WHERE r.producto = Xproducto
+            AND r.pedido = Xpedido;
+		RETURN DETALLE;
+	END;
+END PC_SERVICIO;
+/
+
+                                                                    /*PC_PRODUCTO*/
+CREATE OR REPLACE PACKAGE BODY PC_PRODUCTO IS
+	PROCEDURE AD_PRODUCTO(XidProducto IN varchar2, Xnombre IN varchar2, Xdescripcion IN varchar2, Xprecio IN number, Xmarca IN varchar2, Xcategoria IN varchar2) IS
+	BEGIN
+		INSERT INTO productos (idProducto ,nombre ,descripcion ,precio,marca ,categoria ) VALUES (XidProducto, Xnombre , Xdescripcion , Xprecio , Xmarca , Xcategoria  );
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar productos');
+	END;
+    PROCEDURE MO_PRODUCTO(XidProducto IN varchar2, Xprecio IN number, Xmarca IN varchar2) IS
+	BEGIN
+		UPDATE productos SET precio = Xprecio , marca = Xmarca WHERE idProducto = XidProducto;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al modificar en productos');
+	END; 
+    PROCEDURE EL_PRODUCTO(XidProducto IN varchar2) IS
+	BEGIN
+		DELETE FROM productos WHERE idProducto = XidProducto;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al eliminar en productos');
+	END; 
+    FUNCTION CO_PRODUCTO(XidProducto IN varchar2) RETURN SYS_REFCURSOR IS PRODUCTO SYS_REFCURSOR;
+	BEGIN 
+		OPEN PRODUCTO FOR
+			SELECT 
+                *
+            FROM productos p
+            WHERE idProducto = XidProducto;
+		RETURN PRODUCTO;
+	END;
+    FUNCTION CO_PRODUCTOS_VENDIDOS RETURN SYS_REFCURSOR IS PRODUCTOS SYS_REFCURSOR;
+	BEGIN 
+		OPEN PRODUCTOS FOR
+			SELECT 
+                *
+            FROM Productos_vendidos;
+		RETURN PRODUCTOS;
+	END;
+    FUNCTION CO_INFO_PRODUCTOS RETURN SYS_REFCURSOR IS PRODUCTOS SYS_REFCURSOR;
+	BEGIN 
+		OPEN PRODUCTOS FOR
+			SELECT 
+                *
+            FROM Info_Productos;
+		RETURN PRODUCTOS;
+	END;
+    FUNCTION CO_PRODUCTOS_MARCA(Xmarca IN varchar2) RETURN SYS_REFCURSOR IS PRODUCTOS SYS_REFCURSOR;
+	BEGIN 
+		OPEN PRODUCTOS FOR
+			SELECT 
+                *
+            FROM productos p
+            WHERE p.marca = Xmarca;
+		RETURN PRODUCTOS;
+	END;
+    FUNCTION CO_PRODUCTOS_PRECIO(Xprecio IN number) RETURN SYS_REFCURSOR IS PRODUCTOS SYS_REFCURSOR;
+	BEGIN 
+		OPEN PRODUCTOS FOR
+			SELECT 
+                *
+            FROM productos p
+            WHERE p.precio = Xprecio;
+		RETURN PRODUCTOS;
+	END;
+    FUNCTION CO_PRODUCTOS_CATEGORIA(Xcategoria IN varchar2) RETURN SYS_REFCURSOR IS PRODUCTOS SYS_REFCURSOR;
+	BEGIN 
+		OPEN PRODUCTOS FOR
+			SELECT 
+                *
+            FROM productos p
+            WHERE p.categoria = Xcategoria;
+		RETURN PRODUCTOS;
+	END;
+END PC_PRODUCTO;
+/
+
+                                                                    /*PC_CATEGORIA*/
+CREATE OR REPLACE PACKAGE BODY PC_CATEGORIA IS
+	PROCEDURE AD_CATEGORIA(XidCategoria IN varchar2, Xnombre IN varchar2, Xcategoria IN varchar2) IS
+	BEGIN
+		INSERT INTO categorias (idCategoria ,nombre ,categoria ) VALUES (XidCategoria , Xnombre , Xcategoria);
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al insertar en categorias');
+	END;
+    PROCEDURE EL_CATEGORIA(XidCategoria IN varchar2) IS
+	BEGIN
+		DELETE FROM categorias WHERE idCategoria = XidCategoria;
+		COMMIT;
+		EXCEPTION
+		WHEN OTHERS THEN
+			ROLLBACK;
+			raise_application_error(-20001,'Error al eliminar en categorias');
+	END;
+    FUNCTION CO_CATEGORIA(XidCategoria IN varchar2) RETURN SYS_REFCURSOR IS CATEGORIAS SYS_REFCURSOR;
+	BEGIN 
+		OPEN CATEGORIAS FOR
+			SELECT 
+                *
+            FROM categorias c
+            WHERE c.idCategoria = XidCategoria;
+		RETURN CATEGORIAS;
+	END;
+END PC_CATEGORIA;
+/
+
