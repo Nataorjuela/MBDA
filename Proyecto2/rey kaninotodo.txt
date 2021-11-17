@@ -1,0 +1,365 @@
+BEGIN
+   FOR cur_rec IN (SELECT object_name, object_type
+                     FROM user_objects
+                    WHERE object_type IN
+                             ('TABLE',
+                              'VIEW',
+                              'PACKAGE',
+                              'PROCEDURE',
+                              'FUNCTION',
+                              'SEQUENCE',
+                              'SYNONYM',
+                              'PACKAGE BODY'
+                             ))
+   LOOP
+      BEGIN
+         IF cur_rec.object_type = 'TABLE'
+         THEN
+            EXECUTE IMMEDIATE    'DROP '
+                              || cur_rec.object_type
+                              || ' "'
+                              || cur_rec.object_name
+                              || '" CASCADE CONSTRAINTS';
+         ELSE
+            EXECUTE IMMEDIATE    'DROP '
+                              || cur_rec.object_type
+                              || ' "'
+                              || cur_rec.object_name
+                              || '"';
+         END IF;
+      EXCEPTION
+         WHEN OTHERS
+         THEN
+            DBMS_OUTPUT.put_line (   'FAILED: DROP '
+                                  || cur_rec.object_type
+                                  || ' "'
+                                  || cur_rec.object_name
+                                  || '"'
+                                 );
+      END;
+   END LOOP;
+END;
+/
+
+/*XTABLAS*/
+
+DROP TABLE empleados;
+DROP TABLE clientes;
+DROP TABLE mascotas ;
+DROP TABLE celulares;
+DROP TABLE facturas;
+DROP TABLE lineaFactura;
+DROP TABLE bienes;
+DROP TABLE productos;
+/*TABLAS*/
+
+CREATE TABLE empleados(cedula number(10)not null,cargo char(1) not null,nombre varchar2(50) not null,correo varchar2(50));
+
+CREATE TABLE clientes(cedula number(10)not null,nombre varchar2(50) not null,fechaInscripcion timestamp not null,fechaRetiro timestamp,correo varchar2(50),direccion varchar2(50) not null);
+
+CREATE TABLE mascotas (idMascota number(5)not null,cedula number(10) not null,nombreMascota varchar2(50)not null,edad number(2)not null,raza varchar2(50)not null,sexo char(1)not null);
+
+CREATE TABLE celulares(cedula number(10) not null,celular number(10)not null);
+
+--CREATE TABLE celularesE(cedula number(10) not null,celular number(10)not null);
+
+CREATE TABLE facturas(idFactura number(5) not null,cedula number(9) not null,fecha timestamp not null);
+
+CREATE TABLE lineaFactura(idFactura number(5) not null,idBien number(5) not null,precio number(3) not null,cantidad number(2)not null,descripcion varchar2(50),fecha timestamp not null);
+
+CREATE TABLE bienes(idBien number(5) not null,nombreBien varchar(10)not null,idMascota number(5) not null);
+
+CREATE TABLE productos(idBien number(5) not null,nombreProducto varchar2(50) not null,cantidad number(2)not null,tipoProducto char(1) not null,precioCompra number(4)not null,descripcion varchar(50));
+
+/*ATRIBUTOS*/
+
+--Verficar que el cargo sea P o V
+ALTER TABLE empleados ADD CONSTRAINT CK_EMPLEADOS_CARGO CHECK(cargo='P' or cargo='V');
+
+--Verificar que el empleado sea mayor de edad
+ALTER TABLE empleados ADD CONSTRAINT CK_EMPLEADOS_CEDULA CHECK(cedula>1000000);
+
+----verificar que el correo tenga un @
+ALTER TABLE empleados ADD CONSTRAINT CK_EMPLEADOS_CORREO CHECK(correo LIKE '%@%'OR correo='null');
+
+--Verificar que el cliente sea mayor de edad
+ALTER TABLE clientes ADD CONSTRAINT CK_CLIENTES_CEDULA CHECK(cedula>1000000);
+
+----verificar que el correo tenga un @
+ALTER TABLE clientes  ADD CONSTRAINT CK_CLIENTES_CORREO CHECK(correo LIKE '%@%');
+
+--Verficiar en el caso de que un cliente se retire que su fecha de retiro sea despúes de la fecha de inscripcion
+ALTER TABLE clientes ADD CONSTRAINT CK_CLIENTES_FECHA CHECK (fechaInscripcion<fechaRetiro or fechaRetiro='null');
+
+--Verificar que el dueño d ela mascota sea mayor de edad
+ALTER TABLE mascotas ADD CONSTRAINT CK_MASCOTAS_CEDULA CHECK(cedula>1000000);
+
+--Verficiar que el id de la mascota sea mayor a 9999
+ALTER TABLE mascotas ADD CONSTRAINT CK_MASCOTAS_ID CHECK(idMascota>9999);
+
+--Verificar que el sexo de la amscota sea M o H
+ALTER TABLE mascotas ADD CONSTRAINT CK_MASCOTAS_SEXO CHECK(sexo='M' or sexo='H');
+
+--Verificar que el numero de celular sea mayor a 999999999
+ALTER TABLE celulares ADD CONSTRAINT CK_CELULARES_CELULAR CHECK(celular>999999999);
+
+--Verficar que la persona sera mayor de edad, confimarndo que su numero de ceula es mayor a 1000000
+ALTER TABLE celulares ADD CONSTRAINT CK_CELULARES_CEDULA CHECK(cedula>100000000);
+
+----Verificar que el numero de celular sea mayor a 999999999
+--ALTER TABLE celularesE ADD CONSTRAINT CK_CELULARES_CELULAR CHECK(celular>999999999);
+--
+----Verficar que la persona sera mayor de edad, confimarndo que su numero de ceula es mayor a 1000000
+--ALTER TABLE celularesE ADD CONSTRAINT CK_CELULARES_CEDULA CHECK(cedula>100000000);
+
+--Verificar que el id de la factura sea mayor a 9999
+ALTER TABLE lineaFactura ADD CONSTRAINT CK_LINEAFACTURA_IDFACTURA CHECK(idFactura>9999);
+
+--Verificar que el id de la factura sea mayor a 9999
+ALTER TABLE lineaFactura ADD CONSTRAINT CK_LINEAFACTURA_PRECIO CHECK(precio>0);
+
+--Verificar que la cantidad sea mayor a 0
+ALTER TABLE lineaFactura ADD CONSTRAINT CK_LINEAFACTURAS_CANTIDAD CHECK(cantidad>0);
+
+--Verificar que el id de la factura sea mayor a 9999
+ALTER TABLE facturas ADD CONSTRAINT CK_FACTURAS_IDFACTURA CHECK(idFactura>9999);
+
+--Verificar que la persona registrada en la factura sea mayor de edad
+ALTER TABLE facturas ADD CONSTRAINT CK_FACTURAS_CEDULA CHECK(cedula>10000000);
+
+--Verificar que el nombre del bien es una compra o es peluqueria
+ALTER TABLE bienes ADD CONSTRAINT CK_BIENES_NOMBRE CHECK(nombreBien='compra' or nombreBien='peluqueria');
+
+--Verificar que el id del bien sea mayor a 9999
+ALTER TABLE bienes ADD CONSTRAINT CK_BIENES_IDBIEN CHECK(idBien>9999);
+
+--Verificar que el precio d ela compra sea mayor a 0
+ALTER TABLE productos ADD CONSTRAINT CK_PRODUCTOS_PRECIOCOMPRA CHECK(precioCompra>0);
+
+--Verificar que el id del bien sea mayor a 9999
+ALTER TABLE productos ADD CONSTRAINT CK_PRODUCTOS_IDBien CHECK(idBien>9999);
+
+--Verficiar que el tipo del producto sea  A,H,P,J,C
+ALTER TABLE productos ADD CONSTRAINT CK_PRODUCTOS_TIPOPRODUCTO CHECK(tipoProducto='A' or tipoProducto='H'  or tipoProducto='P' or tipoProducto='J' or tipoProducto='C');
+
+
+/*PRIMARIAS*/
+
+ALTER TABLE empleados ADD PRIMARY KEY (cedula);
+ALTER TABLE clientes ADD PRIMARY KEY (cedula);
+ALTER TABLE mascotas ADD PRIMARY KEY (idMascota);
+ALTER TABLE celulares ADD PRIMARY KEY(celular);
+--ALTER TABLE celularesE ADD PRIMARY KEY(celular);
+ALTER TABLE LineaFactura ADD PRIMARY KEY (idFactura,idBien);
+ALTER TABLE Facturas ADD PRIMARY KEY(idFactura);
+ALTER TABLE Bienes ADD PRIMARY KEY (idBien);
+ALTER TABLE productos ADD PRIMARY KEY (idBien,nombreProducto);
+
+/*UNICAS*/
+
+ALTER TABLE empleados ADD UNIQUE (correo);
+ALTER TABLE clientes ADD UNIQUE (correo);
+ALTER TABLE clientes ADD UNIQUE (direccion);
+
+/*FORANEAS*/
+
+ALTER TABLE mascotas ADD CONSTRAINT FK_MASCOTAS_CEDULA FOREIGN KEY (cedula) REFERENCES clientes(cedula);
+ALTER TABLE celulares ADD CONSTRAINT FK_CELULARES_CEDULAC FOREIGN KEY(cedula)REFERENCES clientes(cedula); 
+ALTER TABLE celulares ADD CONSTRAINT FK_CELULARES_CEDULAE FOREIGN KEY(cedula) REFERENCES empleados(cedula);
+ALTER TABLE lineaFactura ADD CONSTRAINT FK_LINEASFACTURA_IDFACTURA FOREIGN KEY (idFactura) REFERENCES facturas(idFactura);
+ALTER TABLE lineaFactura ADD CONSTRAINT FK_LINEASFACTURA_IDBIEN FOREIGN KEY (idBien) REFERENCES bienes(idBien);
+ALTER TABLE facturas ADD CONSTRAINT FK_FACTURAS_CEDULA FOREIGN KEY (cedula) REFERENCES clientes(cedula);
+ALTER TABLE productos ADD CONSTRAINT FK_PRODUCTOS_IDBIEN FOREIGN KEY (idBien) REFERENCES bienes(idBien);
+ALTER TABLE bienes ADD CONSTRAINT FK_BIENES_IDMASCOTA FOREIGN KEY (idMascota) REFERENCES mascotas(idMascota);
+
+/*POBLAR OK*/
+
+insert into empleados (cedula, cargo, nombre, correo) values (2491770576, 'V','Diego Orjuela','Diego@hotmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (9308659915, 'V', 'Diana Rocha', 'Diana@gmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (3190645099, 'P', 'Raimundo Orjuela', 'Raimundo@hotmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (0495866918, 'V', 'Claudia Hernandez' , 'Claudia@yahoo.com');
+insert into empleados (cedula, cargo, nombre, correo) values (1513420173, 'P', 'Rocio Paramo', 'kbubbear2@phoca.cz');
+insert into empleados (cedula, cargo, nombre, correo) values (9857359797, 'P', 'Luis Rocha', 'hkeavy6@issuu.com');
+insert into empleados (cedula, cargo, nombre, correo) values (3698040675, 'V', 'Lucia Quintero', 'lucia@hotmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (7408710636, 'V', 'Camila Villate', 'mariacas17@gmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (3291216475, 'P', 'Patricia Gomez', 'moneal8@chron.com');
+insert into empleados (cedula, cargo, nombre, correo) values (7179872852, 'P', 'Oscar rey', 'plittrell7@whitehouse.gov');
+insert into empleados (cedula, cargo, nombre, correo) values (6999473369, 'V','Dilan Castillo','dila.r@gmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (9050331051, 'P', 'Mariana Romero', 'dwalsham9@cocolog-nifty.com');
+insert into empleados (cedula, cargo, nombre, correo) values (3764450028, 'P', 'Nataly Quintero', 'nata@yahoo.es');
+insert into empleados (cedula, cargo, nombre, correo) values (1313293827, 'V', 'Laura Perez', 'lau@hotmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (7900167071, 'V', 'Sofia Franco', 'sofif@hotmail.com');
+insert into empleados (cedula, cargo, nombre, correo) values (8438608863, 'P', 'Juan Mendez', 'jm@mail.com');
+
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (2491770576,'Diego Orjuela','24/2/2020',null,'Diego@hotmail.com','calle 55 a sur No 68 d 21');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (1010247478,'Tomas Santamaria','10/10/2020','12/11/2020','tomas@gmail.com','cr 68 d No 76- 42');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (2522805709,'Maria Sierra', '15/08/2020',null,'awhitcher5@blog.com','114 Judy Plaza');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (1833497778,'Valentina Aguirre', '04/05/2020',null,'vaguirre@gmail.com','15424 Iowa Pass');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (6796457783, 'Sofia Vargas', '08/09/2020',null,'sofiav@hotmail.com','3567 Veith Pass');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (5790200407, 'Mariana Ramirez', '12/11/2020','24/12/2020','mr9@cocolog-nifty.com','396 Miller Drive');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (4704349235, 'Tania Lopez', '25/11/2020',null,'tania@outlook.es','1 Prairieview Park');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (2272832783, 'Yulian Torres', '06/07/2010',null,'yt@cght.com', '495 Center Place');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (0495866918, 'Claudia Hernandez', '10/02/2019',null,'Claudia@yahoo.com','1 Carey Park');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (5212626405, 'Camilo Medina',  '08/05/2019',null,'cm@yahoo.cvom','25784 John Wall Junction');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (0186510635, 'Lorena Martinez','12/07/2019',null,'lmar@gmail.com','4 Shopko Lane');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (6248777938, 'Juan Hernandez', '09/03/2015',null,'juanh@yahoo.es','26795 Ruskin Plaza');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (0594237596, 'Fabian Cardozo', '15/09/2020', null, 'fabi@gmail.com','calle 27 sur No 45-20');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (4610189578, 'Luis Barrera',  '07/01/2019', null, 'luis@outlook.es','cr 08 No 19-43');
+insert into clientes (cedula, nombre,  fechaInscripcion, fechaRetiro, correo, direccion) values (3321411534, 'Sebastian Montes', '06/02/2019', null, 'montes@gmail.com','diagonal 22 No.15-34');
+
+
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97083, 2491770576, 'Korry', 2, 'affenpinscher', 'M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97084, 1010247478, 'Cary', 4, 'airedale terrier', 'M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97085, 2522805709, 'Lurlene', 12, 'affenpinscher', 'H');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97086, 1833497778, 'Rosaleen', 9, 'akita americano', 'H');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97087, 6796457783, 'Delmer', 3, 'beagle', 'M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97088, 5790200407, 'Markos', 6, 'boston terrier', 'M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97089, 4704349235, 'Constancy', 3, 'akita americano', 'H');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97090, 2272832783, 'Tammy', 3, 'airedale terrier', 'H');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97091, 0495866918, 'Garrick', 4, 'akita americano', 'M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97092, 5212626405, 'Brent', 6, 'affenpinscher', 'M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97093, 0186510635,'Roqui', 8,'Husky Siberiano','M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97094, 6248777938,'Teddy', 2,'Chow Chow','M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97095, 0594237596,'Kenai', 8,'Alaskan Malamute','M');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97096, 4610189578,'Yuyuba', 9,'Chow Chow','H');
+insert into mascotas (idMascota, cedula, nombreMascota, edad, raza, sexo) values (97097, 3321411534, 'Luna', 2,'Labrador Retriever','H');
+
+
+insert into celulares(cedula, celular) values (2491770576, 3506598573);
+insert into celulares(cedula, celular) values (9308659915, 3186342807);
+insert into celulares(cedula, celular) values (3190645099, 3206598736);
+insert into celulares(cedula, celular) values (0495866918, 3132678896);
+insert into celulares(cedula, celular) values (1513420173, 3107000996);
+insert into celulares(cedula, celular) values (9857359797, 3152019782);
+insert into celulares(cedula, celular) values (3698040675, 3503416894);
+insert into celulares(cedula, celular) values (7408710636, 3144278339);
+insert into celulares(cedula, celular) values (3291216475, 32031569854);
+insert into celulares(cedula, celular) values (7179872852, 3156987642);
+insert into celulares(cedula, celular) values (6999473369, 3136265584);
+insert into celulares(cedula, celular) values (9050331051, 3194556278);
+insert into celulares(cedula, celular) values (3764450028, 3052478893);
+insert into celulares(cedula, celular) values (1313293827, 3175362104);
+insert into celulares(cedula, celular) values (7900167071, 3215869974);
+insert into celulares(cedula, celular) values (8438608863, 3206548397);
+insert into celulares(cedula, celular) values (1010247478, 312465895 );
+insert into celulares(cedula, celular) values (2522805709, 3144426537);
+insert into celulares(cedula, celular) values (183349777, 3212707055);
+insert into celulares(cedula, celular) values (6796457783, 3058152756);
+insert into celulares(cedula, celular) values (5790200407, 3229058274);
+insert into celulares(cedula, celular) values (4704349235, 3138894347);
+insert into celulares(cedula, celular) values (2272832783, 3125301721);
+insert into celulares(cedula, celular) values (0495866918, 3053125171);
+insert into celulares(cedula, celular) values (5212626405, 3053719255);
+insert into celulares(cedula, celular) values (0186510635, 3013561437);
+insert into celulares(cedula, celular) values (6248777938, 3168710083);
+insert into celulares(cedula, celular) values (0594237596, 3105726007);
+insert into celulares(cedula, celular) values (4610189578, 3007565807 );
+insert into celulares(cedula, celular) values (3321411534, 3142153611 );
+
+insert into facturas(idFactura, cedula, fecha) values (10223, 2491770576, '24/02/2020');
+insert into facturas(idFactura, cedula, fecha) values (10224, 1010247478, '10/10/2020');
+insert into facturas(idFactura, cedula, fecha) values (10225, 2522805709, '15/08/2020');
+insert into facturas(idFactura, cedula, fecha) values (10226, 1833497778, '04/05/2020');
+insert into facturas(idFactura, cedula, fecha) values (10227, 6796457783, '08/09/2020');
+insert into facturas(idFactura, cedula, fecha) values (10228, 5790200407, '12/11/2020');
+insert into facturas(idFactura, cedula, fecha) values (10229, 4704349235, '25/11/2020');
+insert into facturas(idFactura, cedula, fecha) values (10230, 2272832786, '06/07/2010');
+insert into facturas(idFactura, cedula, fecha) values (10231, 0495866918, '10/02/2019');
+insert into facturas(idFactura, cedula, fecha) values (10232, 5212626405, '08/05/2019');
+insert into facturas(idFactura, cedula, fecha) values (10233, 0186510635, '12/07/2019');
+insert into facturas(idFactura, cedula, fecha) values (10234, 6248777938, '09/03/2015');
+insert into facturas(idFactura, cedula, fecha) values (10235, 0594237596, '15/09/2020');
+insert into facturas(idFactura, cedula, fecha) values (10236, 4610189578, '07/01/2019');
+insert into facturas(idFactura, cedula, fecha) values (10237, 3321411534, '06/02/2019');
+insert into facturas(idFactura, cedula, fecha) values (10238, 2491770576, '24/03/2020');
+insert into facturas(idFactura, cedula, fecha) values (10239, 1010247478, '10/11/2020');
+insert into facturas(idFactura, cedula, fecha) values (10240, 2491770576, '24/04/2020');
+
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10223, 65041, 25000, 1, 'dejar bajito el corte', '2/24/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10224, 65042, 10000, 1, 'null', '10/10/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10225, 65043, 14000, 1, 'null', '15/08/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10226, 65044, 18000, 2, 'Talla mediana', '04/05/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10227, 65045, 50000, 1, 'Small', '08/09/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10228, 65046, 25000, 1, 'pelota grande', '12/11/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10229, 65047, 2000, 2, 'peluqueria', '25/11/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10230, 65048, 20000, 1, 'Mediano',  '06/07/2010');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10231, 65049, 22000, 1, 'buso talla m', '10/02/2019');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10232, 65050, 12000, 1, 'can amor',  '08/05/2019');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10233, 65051, 100000, 1, 'Bulto 25 kg','12/07/2019');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10234, 65052, 35000, 1, 'Medium', '09/03/2015');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10235, 65053, 25000, 1, 'peluqueria', '15/09/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10236, 65054, 1000, 1, 'pollo', '07/01/2019');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10237, 65055, 20000, 1, 'peluqueria', '06/02/2019');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10238, 65056, 20000, 1, 'peluqueria', '24/03/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10239, 65057, 20000, 1, 'peluqueria', '10/11/2020');
+insert into lineaFactura (idFactura, idBien, precio, cantidad, descripcion, fecha) values (10240, 65058, 20000, 1, 'peluqueria',  '24/04/2020');
+
+insert into Bienes (idBien, nombreBien,  idFactura) values (65041, 'peluqueria', 10223);
+insert into Bienes (idBien, nombreBien, idFactura) values (65042, 'compra', 10224);
+insert into Bienes (idBien, nombreBien, idFactura) values (65043,'compra' ,10225);
+insert into Bienes (idBien, nombreBien, idFactura) values (65044, 'compra',10226);
+insert into Bienes (idBien, nombreBien, idFactura) values (65045,'compra', 10227);
+insert into Bienes (idBien, nombreBien, idFactura) values (65046,'compra', 10228);
+insert into Bienes (idBien, nombreBien, idFactura) values (65047, 'peluqueria',10229);
+insert into Bienes (idBien, nombreBien, idFactura) values (65048, 'compra',10230);
+insert into Bienes (idBien, nombreBien, idFactura) values (65049,'compra', 10231);
+insert into Bienes (idBien, nombreBien, idFactura) values (65050,'compra', 10232);
+insert into Bienes (idBien, nombreBien, idFactura) values (65051, 'compra',10233);
+insert into Bienes (idBien, nombreBien, idFactura) values (65052, 'compra',10234);
+insert into Bienes (idBien, nombreBien, idFactura) values (65053,'peluqueria',10235);
+insert into Bienes (idBien, nombreBien, idFactura) values (65054,'compra', 10236);
+insert into Bienes (idBien, nombreBien, idFactura) values (65055, 'peluqueria',10237);
+insert into Bienes (idBien, nombreBien, idFactura) values (65056, 'peluqueria',10238);
+insert into Bienes (idBien, nombreBien, idFactura) values (65057, 'peluqueria',10239);
+insert into Bienes (idBien, nombreBien, idFactura) values (65058, 'peluqueria',10240);
+
+
+insert into productos (idBien,  nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65042,  'crema dental para perros', 7, 'H', 240768, 'COLGATE');
+insert into productos (idBien,nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65043,  'cuerda de bola royalcare', 10, 'J', 14492, 'JUGUETE RESISTENTE PARA CACHORRO DE PERRO');
+insert into productos (idBien,nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65044, 'BUSO PERRO', 8, 'A', 401974, 'MARCA SQUEAKER SQUEEZE');
+insert into productos (idBien,nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65045,  'cama perro adulto', 16, 'A', 196776, 'DIÁMETRO 7.1CM (AMARILLO + AZUL)');
+insert into productos (idBien,  nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65046,  'pelota de goma', 2, 'J', 360839, 'PARA MORDELONES AGRESIVOS. JUGUETES INDESTRUCTIBLES PARA PERROS GRANDES');
+insert into productos (idBien, nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65048,  'cuerda llanta', 14, 'J', 285342, 'null');
+insert into productos (idBien, nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65049,  'saco gorro', 15, 'A', 476578, 'Saco con mangas y gorro');
+insert into productos (idBien,  nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65050,  'perfume canAmor', 3, 'H', 185449, 'ANTIPULGAS');
+insert into productos (idBien,  nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65051,  'bulto Dog Chow Raza pequeña', 1, 'C', 100000, 'Bulto por 25 kg');
+insert into productos (idFactura,  nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65052,  'cama perro cachorro', 18, 'A', 174998, 'SMALL');
+insert into productos (idFactura,  nombreProducto, cantidad, tipoProducto, precioCompra, descripcion) values (65054,  'cabano', 5, 'A', 243692, ' BACON/POLLO');
+
+
+/*CONSULTAS*/
+
+--CONSULTAR OPERATIVAS
+
+--CONSULTAR LA MASCOTA QUE MÁS HA TOMADO EL BIEN DE PELUQUERIA
+SELECT COUNT(idMascota)AS MascotaMayorUsoP
+FROM mascotas,bienes
+WHERE idMascota.mascotas=idMascota.ienes and nombreBien='peluqueria'
+ORDER BY MascotaMayorUsoP DESC;
+
+--CONSULTAR LA CANTIDAD DE CLIENTES DE LOS DOS ULTIMOS MESES
+
+SELECT cedula AS Cantcliente
+FROM clientes
+WHERE fecha BETWEEN '20201001' and '20201208'
+ORDER BY COUNT(cedula)DESC;
+
+--CONSULTAR LA CANTIDAD DE PRODUCTOS EN INVENTARIO
+
+SELECT cantidad,idProducto,nombreProducto
+FROM productos
+ORDER BY cantidad ASC;
+
+--CONSULTAR LAS MAYORES VENTAS
+
+SELECT cantidad,idFactura
+FROM LineaFactura
+ORDER BY cantidad DESC;
+
+--CONSULTAR EL CLIENTE MÁS ANTIGUO
+
+SELECT antiguedad,nombre,cedula
+FROM clientes
+ORDER BY antiguedad DESC;
+
+

@@ -1,0 +1,21 @@
+<descripciones>
+	<descripcion idBien="45698">
+		<tipoprod>C</tipoprod>
+		<nombreProducto>Dog Chow</nombreProducto>
+		<cantidad>25 kg</cantidad>
+		<edad_tamaño>adulto raza pequeña</edad_tamaño>
+	</descripcion>
+	<descripcion idBien="45699">
+		<tipoprod>A</tipoprod>
+		<nombreProducto>Collar</nombreProducto>
+		<Talla>Talle M</Talla>
+		<Marca>Mascotin</Marca>
+		<color>rosa</color>
+	</descripcion>
+	<descripcion idBien="45697">
+		<tipoprod>H</tipoprod>
+		<nombreProducto>Cepillo de Dientes</nombreProducto>
+		<Marca>colgate</Marca>
+		<fechaVencimiento>20/08/2021</fechaVencimiento>
+	</descripcion>
+</descripciones>
